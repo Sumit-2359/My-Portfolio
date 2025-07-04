@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>TaskMaster - To-Do List</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-900 text-indigo-200 min-h-screen flex flex-col items-center p-6">
+
+  <h1 class="text-4xl font-bold mb-8">TaskMaster</h1>
+
+  <form id="taskForm" class="flex w-full max-w-md mb-6" autocomplete="off">
+    <input
+      type="text"
+      id="taskInput"
+      placeholder="Add a new task"
+      class="flex-grow rounded-l-md px-4 py-3 text-gray-900 focus:outline-none"
+      required
+      autofocus
+    />
+    <button
+      type="submit"
+      class="bg-indigo-600 hover:bg-indigo-700 px-5 rounded-r-md font-semibold transition"
+    >
+      Add
+    </button>
+  </form>
+
+  <ul id="taskList" class="w-full max-w-md space-y-3"></ul>
+
+  <script>
+    const taskForm = document.getElementById('taskForm');
+    const taskInput = document.getElementById('taskInput');
+    const taskList = document.getElementById('taskList');
+
+    // Load saved tasks from localStorage
+    const savedTasks = JSON.parse(localStorage.getItem('tasks')) || [];
+
+    function saveTasks(tasks) {
+      localStorage.setItem('tasks', JSON.stringify(tasks));
+    }
+
+    function renderTasks(tasks) {
+      taskList.innerHTML = '';
+      tasks.forEach((task, index) => {
+        const li = document.createElement('li');
+        li.className = "flex items-center justify-between bg-gray-800 rounded-md px-4 py-3 shadow";
+
+        const taskText = document.createElement('span');
+        taskText.textContent = task.text;
+        taskText.className = task.done ? 'line-through text-gray-500 cursor-pointer' : 'cursor-pointer';
+        taskText.addEventListener('click', () => {
+          tasks[index].done = !tasks[index].done;
+          saveTasks(tasks);
+          renderTasks(tasks);
+        });
+
+        const deleteBtn = document.createElement('button');
+        deleteBtn.innerHTML = `
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-red-500 hover:text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+          </svg>`;
+        deleteBtn.addEventListener('click', () => {
+          tasks.splice(index, 1);
+          saveTasks(tasks);
+          renderTasks(tasks);
+        });
+
+        li.appendChild(taskText);
+        li.appendChild(deleteBtn);
+        taskList.appendChild(li);
+      });
+    }
+
+    taskForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const newTask = taskInput.value.trim();
+      if (newTask === '') return;
+
+      savedTasks.push({ text: newTask, done: false });
+      saveTasks(savedTasks);
+      renderTasks(savedTasks);
+      taskInput.value = '';
+      taskInput.focus();
+    });
+
+    // Initial render
+    renderTasks(savedTasks);
+  </script>
+
+</body>
+</html>
